@@ -1,0 +1,152 @@
+student_id,test_date,test_score,study_mode,remarks
+ST001,2026-07-29,58.8,Offline,Excellent
+ST002,2026-07-29,80.3,Online,Excellent
+ST003,2026-08-16,64.8,Offline,Needs Improvement
+ST004,2026-08-11,48.3,Online,Excellent
+ST005,12/07/2026,74.5,Offline,Needs Improvement
+ST006,2026-08-13,67.7,Online,Needs Improvement
+ST007,2026-08-15,56.2,Offline,Excellent
+ST008,2026-08-27,78.8,Online,Average
+ST009,2026-08-08,92.5,Online,Excellent
+ST010,2026-07-09,45.3,Offline,Average
+ST011,2026-07-25,56.5,online,Needs Improvement
+ST012,2026-08-02,49.9,Offline,Excellent
+ST013,2026-08-20,66.2,Online,Good
+ST014,2026-07-28,75.5,Offline,Good
+ST015,2026-07-27,98.6,Offline,Needs Improvement
+ST016,2026-07-26,75.5,Offline,Excellent
+ST017,2026-07-21,83.3,Offline,Average
+ST018,2026-08-12,77.7,Offline,Average
+ST019,2026-07-10,96.6,Offline,Excellent
+ST020,2026-07-06,66.0,Online,Excellent
+ST021,2026-07-28,53.8,Online,Average
+ST022,2026-08-21,60.6,Online,Excellent
+ST023,2026-08-07,73.3, OFFLINE ,Excellent
+ST024,2026-07-27,58.4,Offline,Needs Improvement
+ST025,"July 18, 2026",66.8,Online,Average
+ST026,2026-08-08,88.1,Offline,Average
+ST027,2026-07-07,86.9,Online,Good
+ST028,2026-08-12,55.6,Offline,Good
+ST029,2026-08-24,89.9,Online,Average
+ST030,2026-08-24,60.5,Offline,Excellent
+ST031,2026-08-18,100.0,Offline,Good
+ST032,2026-08-21,81.7,Offline,Excellent
+ST033,2026-08-08,96.9,Offline,Excellent
+ST034,2026-07-12,55.6,Offline,Average
+ST035,2026-08-28,72.7,ONLINE,Average
+ST036,2026-07-01,77.5,Online,Good
+ST037,2026-08-06,54.2,Offline,Excellent
+ST038,2026-07-10,81.3,Online,Excellent
+ST039,2026-08-17,65.7,Online,Needs Improvement
+ST040,2026-07-27,54.7,Offline,Average
+ST041,2026-07-11,89.9,Offline,Average
+ST042,2026-08-16,84.6,Offline,Excellent
+ST043,2026-08-26,90.8,Online,Good
+ST044,2026-07-11,85.8,Online,Excellent
+ST045,2026/07/25,84.9,Offline,Needs Improvement
+ST046,2026-08-01,73.6,Offline,Needs Improvement
+ST047,2026-07-18,92.9,Online,Excellent
+ST048,2026-07-23,45.7,Offline,Excellent
+ST049,2026-07-19,52.0,Offline,Average
+ST050,2026-07-03,46.5,Online,Needs Improvement
+ST051,2026-08-08,77.7,Online,Excellent
+ST052,2026-07-14,71.7,Offline,Good
+ST053,2026-08-19,50.0,Online,Average
+ST054,2026-07-19,77.3,Offline,Excellent
+ST055,2026-07-01,79.1,Offline,Needs Improvement
+ST056,2026-07-12,49.4,Online,Needs Improvement
+ST057,2026-08-04,73.4,Online,Average
+ST058,2026-07-05,79.2,Offline,Excellent
+ST059,2026-07-28,82.7,Online,Needs Improvement
+ST060,2026-08-28,55.2,Online,Average
+ST061,2026-08-06,99.3,Offline,Needs Improvement
+ST062,2026-08-15,73.8,Offline,Average
+ST063,2026-07-08,54.4,Offline,Excellent
+ST064,2026-07-21,88.2,Online,Needs Improvement
+ST065,08-08-2026,70.1,Offline,Excellent
+ST066,2026-07-28,68.8,Online,Good
+ST067,2026-07-28,95.7,Offline,Excellent
+ST068,2026-07-26,97.6,Offline,Average
+ST069,2026-07-15,84.5,Offline,Good
+ST070,2026-07-05,69.5,Online,Good
+ST071,2026-08-27,61.0,Offline,Average
+ST072,2026-08-16,89.7,Online,Good
+ST073,2026-07-07,71.9,Online,Average
+ST074,2026-07-13,50.5,Online,Good
+ST075,2026-08-18,82.7,Online,Good
+ST076,2026-08-30,,Offline,Needs Improvement
+ST077,2026-08-18,95.0,Offline,Average
+ST078,2026-08-25,86.8,Offline,Good
+ST079,2026-07-29,97.6,Online,Needs Improvement
+ST080,2026-07-29,51.8,Offline,Average
+ST081,2026-08-07,74.0,Online,Average
+ST082,2026-08-02,40.3,Online,Average
+ST083,2026-07-30,76.4,Offline,Excellent
+ST084,2026-07-04,76.7,Offline,Average
+ST085,2026-07-05,79.0,Online,Needs Improvement
+ST086,2026-07-30,74.1,Online,Needs Improvement
+ST087,2026-08-28,66.6,Online,Average
+ST088,2026-08-08,70.1,Offline,Good
+ST089,2026-07-04,72.6,Offline,Excellent
+ST090,2026-08-21,72.9,Offline,Excellent
+ST091,2026-08-02,59.4,Online,Excellent
+ST092,2026-07-16,54.9,Offline,Needs Improvement
+ST093,2026-08-03,95.2,Online,Average
+ST094,2026-07-24,86.8,Offline,Needs Improvement
+ST095,2026-07-27,42.0,Offline,Excellent
+ST096,2026-08-20,67.5,Offline,Excellent
+ST097,2026-07-22,73.4,Online,Needs Improvement
+ST098,2026-07-19,87.3,Offline,Good
+ST099,2026-07-22,80.9,Online,Good
+ST100,2026-08-28,68.8,Offline,Average
+ST101,2026-08-11,52.0,Offline,Good
+ST102,2026-08-08,92.3,Online,Average
+ST103,2026-08-05,67.1,Offline,Average
+ST104,2026-08-22,69.8,Online,Excellent
+ST105,2026-08-11,65.8,Offline,Average
+ST106,2026-07-02,60.3,Offline,
+ST107,2026-07-12,64.7,Online,Average
+ST108,2026-08-30,57.5,Offline,Good
+ST109,2026-07-15,59.2,Online,Good
+ST110,2026-07-05,86.5,Offline,Excellent
+ST111,2026-08-02,95.5,Online,Average
+ST112,2026-08-26,60.9,Online,Needs Improvement
+ST113,2026-07-10,64.2,Online,Good
+ST114,2026-08-23,71.2,Online,Needs Improvement
+ST115,2026-07-03,56.2,Offline,Average
+ST116,2026-08-13,58.4,Online,Needs Improvement
+ST117,2026-08-09,93.4,Offline,Needs Improvement
+ST118,2026-07-15,88.8,Online,Average
+ST119,2026-08-21,68.3,Offline,Good
+ST120,2026-07-24,60.7,Offline,Needs Improvement
+ST121,2026-08-19,89.6,Offline,Needs Improvement
+ST122,2026-08-02,86.6,Offline,Good
+ST123,2026-08-22,67.6,Online,Good
+ST124,2026-08-25,74.7,Offline,Excellent
+ST125,2026-08-11,64.8,Offline,Average
+ST126,2026-08-05,63.0,Online,Excellent
+ST127,2026-07-19,78.4,Online,Good
+ST128,2026-07-18,95.2,Offline,Good
+ST129,2026-08-23,58.7,Offline,Excellent
+ST130,2026-08-30,91.5,Online,Needs Improvement
+ST131,2026-08-26,61.6,Offline,Excellent
+ST132,2026-07-27,63.8,Online,Needs Improvement
+ST133,2026-08-02,90.4,Offline,Good
+ST134,2026-07-25,71.9,Online,Average
+ST135,2026-07-15,95.8,Online,Average
+ST136,2026-08-29,,Online,Average
+ST137,2026-08-20,74.3,Online,Good
+ST138,2026-07-03,86.9,Offline,Needs Improvement
+ST139,2026-08-14,65.9,Online,Needs Improvement
+ST140,2026-07-29,71.1,Online,Excellent
+ST141,2026-07-02,88.7,Offline,Good
+ST142,2026-08-23,64.4,Online,Needs Improvement
+ST143,2026-07-08,92.7,Offline,Good
+ST144,2026-07-20,68.2,Online,Excellent
+ST145,2026-07-16,81.3,Offline,Needs Improvement
+ST146,2026-07-05,79.5,Online,Needs Improvement
+ST147,2026-08-08,64.2,Online,Good
+ST148,2026-08-15,71.1,Online,Average
+ST149,2026-07-28,77.6,Online,Average
+ST150,2026-07-16,87.8,Offline,Good
+ST091,2026-08-02,59.4,Online,Excellent
