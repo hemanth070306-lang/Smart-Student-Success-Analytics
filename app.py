@@ -1,276 +1,95 @@
+
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
 
-# ============================================================
+# =========================================================
 # PAGE CONFIGURATION
-# ============================================================
+# =========================================================
 
 st.set_page_config(
     page_title="Smart Student Success Analytics",
     page_icon="🎓",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
-# ============================================================
+# =========================================================
 # CUSTOM CSS
-# ============================================================
+# =========================================================
 
 st.markdown("""
 <style>
 
-.stApp {
-    background: linear-gradient(135deg, #eef2ff, #f8fafc, #fdf4ff);
-}
-
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
+.main {
+    background-color: #f5f7fb;
 }
 
 .block-container {
     padding-top: 2rem;
-    padding-bottom: 3rem;
 }
 
-/* Main title */
-
-.main-title {
+.hero {
+    padding: 35px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
     text-align: center;
-    font-size: 48px;
-    font-weight: 900;
-    background: linear-gradient(
-        90deg,
-        #4f46e5,
-        #7c3aed,
-        #db2777
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.subtitle {
-    text-align: center;
-    color: #64748b;
-    font-size: 18px;
     margin-bottom: 30px;
 }
 
-/* Section headings */
+.hero h1 {
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.hero p {
+    font-size: 18px;
+}
 
 .section-title {
-    font-size: 30px;
-    font-weight: 800;
-    color: #1e293b;
-    margin-top: 15px;
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 25px;
+    margin-bottom: 15px;
 }
-
-/* Cards */
 
 .card {
-    background: white;
-    padding: 25px;
-    border-radius: 18px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+    padding: 20px;
+    border-radius: 15px;
+    background-color: white;
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.08);
     margin-bottom: 20px;
-}
-
-.card h3 {
-    color: #4f46e5;
-}
-
-/* Experiment card */
-
-.exp-card {
-    background: white;
-    padding: 25px;
-    border-radius: 18px;
-    border-left: 6px solid #6366f1;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
-}
-
-/* Hero */
-
-.hero {
-    background: linear-gradient(
-        135deg,
-        #4f46e5,
-        #7c3aed,
-        #db2777
-    );
-    padding: 45px;
-    border-radius: 25px;
-    color: white;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(79,70,229,0.25);
-}
-
-.hero-title {
-    font-size: 42px;
-    font-weight: 900;
-}
-
-.hero-subtitle {
-    font-size: 18px;
-    opacity: 0.9;
-}
-
-/* Metric cards */
-
-.metric-card {
-    background: white;
-    padding: 20px;
-    border-radius: 18px;
-    text-align: center;
-    box-shadow: 0 7px 20px rgba(0,0,0,0.06);
-}
-
-.metric-number {
-    font-size: 32px;
-    font-weight: 800;
-    color: #4f46e5;
-}
-
-.metric-label {
-    color: #64748b;
-    font-size: 14px;
-}
-
-/* Information boxes */
-
-.info {
-    background: #eff6ff;
-    padding: 20px;
-    border-radius: 15px;
-    border-left: 5px solid #3b82f6;
-}
-
-.success {
-    background: #ecfdf5;
-    padding: 20px;
-    border-radius: 15px;
-    border-left: 5px solid #10b981;
-}
-
-.warning {
-    background: #fffbeb;
-    padding: 20px;
-    border-radius: 15px;
-    border-left: 5px solid #f59e0b;
-}
-
-.danger {
-    background: #fef2f2;
-    padding: 20px;
-    border-radius: 15px;
-    border-left: 5px solid #ef4444;
-}
-
-/* Footer */
-
-.footer {
-    text-align: center;
-    color: #64748b;
-    padding: 30px;
-    margin-top: 40px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# ============================================================
-# LOAD DATASETS
-# ============================================================
+# =========================================================
+# LOAD DATA
+# =========================================================
 
-try:
+students = pd.read_csv("dataset/student_details.csv")
+academic = pd.read_csv("dataset/academic_performance.csv")
+learning = pd.read_csv("dataset/learning_behavior.csv")
+activity = pd.read_csv("dataset/activity_log.csv")
 
-    students = pd.read_csv(
-        "dataset/student_details.csv"
-    )
-
-    academic = pd.read_csv(
-        "dataset/academic_performance.csv"
-    )
-
-    learning = pd.read_csv(
-        "dataset/learning_behavior.csv"
-    )
-
-    activity = pd.read_csv(
-        "dataset/activity_log.csv"
-    )
-
-    final_data = pd.read_csv(
-        "output/final_student_success_dataset.csv"
-    )
-
-except Exception as e:
-
-    st.error("❌ Dataset loading failed.")
-
-    st.code(str(e))
-
-    st.stop()
-
-
-# ============================================================
-# CLEAN DATA FOR DISPLAY
-# ============================================================
-
-final_data = final_data.copy()
-
-numeric_columns = [
-    "attendance",
-    "assignment_score",
-    "internal_marks",
-    "external_marks",
-    "study_hours",
-    "online_hours",
-    "library_visits",
-    "practice_tests",
-    "sleep_hours",
-    "test_score",
-    "total_marks",
-    "average_score"
-]
-
-for col in numeric_columns:
-
-    if col in final_data.columns:
-
-        final_data[col] = pd.to_numeric(
-            final_data[col],
-            errors="coerce"
-        )
-
-
-# ============================================================
-# SIDEBAR NAVIGATION
-# ============================================================
-
-st.sidebar.markdown(
-    """
-    <div style="text-align:center;">
-        <div style="font-size:55px;">🎓</div>
-        <h2>SSSA</h2>
-        <p>Student Success Analytics</p>
-    </div>
-    """,
-    unsafe_allow_html=True
+final_data = pd.read_csv(
+    "output/final_student_success_dataset.csv"
 )
 
-st.sidebar.markdown("---")
+
+# =========================================================
+# SIDEBAR NAVIGATION
+# =========================================================
+
+st.sidebar.title("📚 Project Navigation")
 
 page = st.sidebar.radio(
-    "📚 Project Navigation",
+    "Select Section",
     [
         "🏠 Home",
         "👤 Student Profile",
@@ -283,182 +102,93 @@ page = st.sidebar.radio(
         "📏 Experiment 7 - Scaling",
         "🔤 Experiment 8 - Encoding",
         "📦 Experiment 9 - Binning",
+        "🌐 Experiment 10 - Web Scraping",
         "📊 Overall Analytics",
         "🏆 Student Insights"
     ]
 )
 
-st.sidebar.markdown("---")
 
-st.sidebar.info(
-    """
-    **Project Technologies**
-
-    🐍 Python  
-    🐼 Pandas  
-    📊 Matplotlib  
-    🤖 Scikit-learn  
-    🌐 Streamlit
-    """
-)
-
-
-# ============================================================
+# =========================================================
 # HOME
-# ============================================================
+# =========================================================
 
 if page == "🏠 Home":
 
-    st.markdown(
-        '<div class="hero">'
-        '<div class="hero-title">'
-        '🎓 SMART STUDENT SUCCESS ANALYTICS'
-        '</div>'
-        '<div class="hero-subtitle">'
-        'A Comprehensive Data Wrangling and Learning Behavior Analysis System'
-        '</div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown("")
-
-    st.markdown(
-        """
-        <div class="card">
-
-        <h2>📌 Project Overview</h2>
-
+    st.markdown("""
+    <div class="hero">
+        <h1>🎓 Smart Student Success Analytics</h1>
         <p>
-        Smart Student Success Analytics is a comprehensive data
-        wrangling and student analytics system developed to
-        transform raw student data into clean, structured and
-        analysis-ready information.
+        A Comprehensive Data Wrangling and Learning Behavior
+        Analysis System
         </p>
-
-        <p>
-        The project integrates academic performance,
-        attendance, learning behavior and student activity
-        data using nine major Data Wrangling techniques.
-        </p>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Metrics
-
-    c1, c2, c3, c4 = st.columns(4)
-
-    with c1:
-
-        st.markdown(
-            """
-            <div class="metric-card">
-            <div class="metric-number">150</div>
-            <div class="metric-label">STUDENTS</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with c2:
-
-        st.markdown(
-            """
-            <div class="metric-card">
-            <div class="metric-number">4</div>
-            <div class="metric-label">DATASETS</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with c3:
-
-        st.markdown(
-            """
-            <div class="metric-card">
-            <div class="metric-number">9</div>
-            <div class="metric-label">EXPERIMENTS</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with c4:
-
-        st.markdown(
-            """
-            <div class="metric-card">
-            <div class="metric-number">38</div>
-            <div class="metric-label">FINAL FEATURES</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    st.markdown("")
-
-    # Pipeline
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown(
-        '<div class="section-title">🔄 Data Processing Pipeline</div>',
+        '<div class="section-title">📌 Project Overview</div>',
         unsafe_allow_html=True
     )
 
-    st.info(
-        """
-        📂 Raw CSV Data
-        ↓
-        🔍 Data Exploration
-        ↓
-        🩹 Missing Value Handling
-        ↓
-        🧹 Duplicate Cleaning
-        ↓
-        🔄 Datatype Conversion
-        ↓
-        🔗 Dataset Integration
-        ↓
-        📏 Scaling
-        ↓
-        🔤 Encoding
-        ↓
-        📦 Binning & Transformation
-        ↓
-        📊 Analytics
-        ↓
-        🎓 Student Insights
-        """
-    )
+    st.write("""
+    This project combines all ten Data Wrangling experiments into
+    one complete student analytics system.
+
+    The system processes student academic performance, attendance,
+    study habits, online learning, library visits, practice tests,
+    sleep hours and learning preferences.
+    """)
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("👨‍🎓 Students", len(final_data))
+
+    with col2:
+        st.metric("📊 Features", len(final_data.columns))
+
+    with col3:
+        st.metric("🧪 Experiments", 10)
+
+    with col4:
+        st.metric("📁 Datasets", 4)
 
     st.markdown(
-        """
-        <div class="success">
-
-        <h3>✨ Custom Dataset</h3>
-
-        This project uses a custom-generated student dataset
-        specifically created for this Data Wrangling project.
-        It is not directly copied from a common Kaggle dataset.
-
-        </div>
-        """,
+        '<div class="section-title">🧪 Experiments Included</div>',
         unsafe_allow_html=True
     )
 
+    experiments = [
+        "1️⃣ Read and display CSV data",
+        "2️⃣ Dataset exploration",
+        "3️⃣ Missing value handling",
+        "4️⃣ Duplicate and inconsistent record cleaning",
+        "5️⃣ Datatype conversion and formatting",
+        "6️⃣ Merge, join and concatenate",
+        "7️⃣ Normalization and standardization",
+        "8️⃣ Label encoding and one-hot encoding",
+        "9️⃣ Data binning and transformation",
+        "🔟 Web scraping using Requests and BeautifulSoup"
+    ]
 
-# ============================================================
+    for exp in experiments:
+        st.write("✅", exp)
+
+
+# =========================================================
 # STUDENT PROFILE
-# ============================================================
+# =========================================================
 
 elif page == "👤 Student Profile":
 
     st.markdown(
-        '<div class="main-title">👤 Student Profile</div>',
+        '<div class="section-title">👤 Individual Student Analysis</div>',
         unsafe_allow_html=True
+    )
+
+    st.info(
+        "Select one particular Student ID below and click "
+        "'Analyze Student' to view their complete analysis."
     )
 
     student_ids = sorted(
@@ -466,500 +196,550 @@ elif page == "👤 Student Profile":
     )
 
     selected_id = st.selectbox(
-        "🔎 Select Student ID",
+        "🎓 Select Student ID",
         student_ids
     )
 
-    student_rows = final_data[
-        final_data["student_id"] == selected_id
-    ]
-
-    student = student_rows.iloc[0]
-
-    st.markdown(
-        f"""
-        <div class="hero">
-
-        <div class="hero-title">
-        🎓 {student["student_id"]}
-        </div>
-
-        <div class="hero-subtitle">
-        {student["name"]} • {student["branch"]} • Year {student["year"]}
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+    analyze = st.button(
+        "🔍 Analyze Student",
+        type="primary",
+        use_container_width=True
     )
 
-    st.markdown("### 📊 Performance Snapshot")
+    if analyze:
 
-    c1, c2, c3, c4 = st.columns(4)
+        student = final_data[
+            final_data["student_id"] == selected_id
+        ]
 
-    with c1:
-        st.metric(
-            "Average Score",
-            f"{student['average_score']:.2f}"
-        )
+        if student.empty:
 
-    with c2:
-        st.metric(
-            "Attendance",
-            f"{student['attendance']:.1f}%"
-        )
+            st.error("Student ID not found.")
 
-    with c3:
-        st.metric(
-            "Study Hours",
-            f"{student['study_hours']:.1f}"
-        )
-
-    with c4:
-
-        score = student["test_score"]
-
-        if pd.notna(score):
-            score_text = f"{score:.1f}"
         else:
-            score_text = "N/A"
 
-        st.metric(
-            "Test Score",
-            score_text
-        )
+            student = student.iloc[0]
 
-    # Personal information
+            st.success(
+                f"Analysis generated successfully for {selected_id}"
+            )
 
-    st.markdown("### 👤 Personal Information")
+            st.markdown(
+                f"""
+                <div class="hero">
+                    <h1>🎓 {student['name']}</h1>
+                    <p>Student ID: {student['student_id']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-    personal = pd.DataFrame({
-        "Field": [
-            "Name",
-            "Gender",
-            "Age",
-            "Branch",
-            "Year",
-            "City"
-        ],
-        "Value": [
-            student["name"],
-            student["gender"],
-            student["age"],
-            student["branch"],
-            student["year"],
-            student["city"]
-        ]
-    })
+            # =================================================
+            # PERSONAL INFORMATION
+            # =================================================
 
-    st.dataframe(
-        personal,
-        use_container_width=True,
-        hide_index=True
-    )
+            st.markdown(
+                '<div class="section-title">👤 Personal Information</div>',
+                unsafe_allow_html=True
+            )
 
-    # Academic
+            col1, col2, col3, col4 = st.columns(4)
 
-    st.markdown("### 📚 Academic Performance")
+            with col1:
+                st.metric("Student ID", student["student_id"])
 
-    academic_profile = pd.DataFrame({
-        "Metric": [
-            "Attendance",
-            "Assignment Score",
-            "Internal Marks",
-            "External Marks",
-            "Total Marks",
-            "Average Score",
-            "Performance Category"
-        ],
-        "Value": [
-            student["attendance"],
-            student["assignment_score"],
-            student["internal_marks"],
-            student["external_marks"],
-            student["total_marks"],
-            student["average_score"],
-            student["performance_category"]
-        ]
-    })
+            with col2:
+                st.metric("Age", student["age"])
 
-    st.dataframe(
-        academic_profile,
-        use_container_width=True,
-        hide_index=True
-    )
+            with col3:
+                st.metric("Gender", student["gender"])
 
-    # Learning
+            with col4:
+                st.metric("Year", student["year"])
 
-    st.markdown("### 🧠 Learning Behavior")
+            col1, col2, col3 = st.columns(3)
 
-    learning_profile = pd.DataFrame({
-        "Metric": [
-            "Study Hours",
-            "Online Hours",
-            "Library Visits",
-            "Practice Tests",
-            "Sleep Hours",
-            "Preferred Resource",
-            "Study Mode"
-        ],
-        "Value": [
-            student["study_hours"],
-            student["online_hours"],
-            student["library_visits"],
-            student["practice_tests"],
-            student["sleep_hours"],
-            student["preferred_resource"],
-            student["study_mode"]
-        ]
-    })
+            with col1:
+                st.metric("Branch", student["branch"])
 
-    st.dataframe(
-        learning_profile,
-        use_container_width=True,
-        hide_index=True
-    )
+            with col2:
+                st.metric("City", student["city"])
 
-    # Chart
+            with col3:
+                st.metric(
+                    "Preferred Resource",
+                    student["preferred_resource"]
+                )
 
-    st.markdown("### 📈 Academic Score Breakdown")
+            # =================================================
+            # ACADEMIC PERFORMANCE
+            # =================================================
 
-    subjects = [
-        "Assignment",
-        "Internal",
-        "External"
-    ]
+            st.markdown(
+                '<div class="section-title">📚 Academic Performance</div>',
+                unsafe_allow_html=True
+            )
 
-    scores = [
-        student["assignment_score"],
-        student["internal_marks"],
-        student["external_marks"]
-    ]
+            col1, col2, col3, col4 = st.columns(4)
 
-    fig, ax = plt.subplots(figsize=(9, 4))
+            with col1:
+                st.metric(
+                    "Attendance",
+                    f"{student['attendance']:.1f}%"
+                )
 
-    ax.bar(
-        subjects,
-        scores
-    )
+            with col2:
+                st.metric(
+                    "Assignment Score",
+                    f"{student['assignment_score']:.1f}"
+                )
 
-    ax.set_ylim(0, 100)
+            with col3:
+                st.metric(
+                    "Internal Marks",
+                    f"{student['internal_marks']:.1f}"
+                )
 
-    ax.set_ylabel("Score")
+            with col4:
+                st.metric(
+                    "External Marks",
+                    f"{student['external_marks']:.1f}"
+                )
 
-    ax.set_title(
-        "Academic Performance Breakdown"
-    )
+            col1, col2, col3 = st.columns(3)
 
-    ax.grid(
-        axis="y",
-        alpha=0.2
-    )
+            with col1:
+                st.metric(
+                    "Total Marks",
+                    f"{student['total_marks']:.1f}"
+                )
 
-    st.pyplot(fig)
+            with col2:
+                st.metric(
+                    "Average Score",
+                    f"{student['average_score']:.2f}"
+                )
 
-    plt.close(fig)
+            with col3:
+                st.metric(
+                    "Performance",
+                    str(student["performance_category"])
+                )
+
+            # =================================================
+            # LEARNING BEHAVIOR
+            # =================================================
+
+            st.markdown(
+                '<div class="section-title">📖 Learning Behavior</div>',
+                unsafe_allow_html=True
+            )
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric(
+                    "Study Hours",
+                    f"{student['study_hours']:.1f}"
+                )
+
+            with col2:
+                st.metric(
+                    "Online Hours",
+                    f"{student['online_hours']:.1f}"
+                )
+
+            with col3:
+                st.metric(
+                    "Library Visits",
+                    f"{student['library_visits']:.0f}"
+                )
+
+            with col4:
+                st.metric(
+                    "Practice Tests",
+                    f"{student['practice_tests']:.0f}"
+                )
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric(
+                    "Sleep Hours",
+                    f"{student['sleep_hours']:.1f}"
+                )
+
+            with col2:
+                st.metric(
+                    "Study Level",
+                    str(student["study_level"])
+                )
+
+            with col3:
+                st.metric(
+                    "Attendance Category",
+                    str(student["attendance_category"])
+                )
+
+            # =================================================
+            # TEST INFORMATION
+            # =================================================
+
+            st.markdown(
+                '<div class="section-title">📝 Test & Activity Information</div>',
+                unsafe_allow_html=True
+            )
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                test_score = student["test_score"]
+
+                if pd.isna(test_score):
+                    st.metric("Test Score", "Not Available")
+                else:
+                    st.metric(
+                        "Test Score",
+                        f"{test_score:.1f}"
+                    )
+
+            with col2:
+                st.metric(
+                    "Study Mode",
+                    student["study_mode"]
+                )
+
+            with col3:
+                st.metric(
+                    "Remarks",
+                    student["remarks"]
+                )
+
+            # =================================================
+            # SCORE BREAKDOWN
+            # =================================================
+
+            st.markdown(
+                '<div class="section-title">📊 Academic Score Breakdown</div>',
+                unsafe_allow_html=True
+            )
+
+            score_data = pd.DataFrame({
+                "Category": [
+                    "Assignment",
+                    "Internal",
+                    "External"
+                ],
+                "Score": [
+                    student["assignment_score"],
+                    student["internal_marks"],
+                    student["external_marks"]
+                ]
+            })
+
+            st.bar_chart(
+                score_data.set_index("Category")
+            )
+
+            # =================================================
+            # INDIVIDUAL ANALYSIS
+            # =================================================
+
+            st.markdown(
+                '<div class="section-title">🧠 Student Analysis</div>',
+                unsafe_allow_html=True
+            )
+
+            average = student["average_score"]
+            attendance = student["attendance"]
+            study_hours = student["study_hours"]
+            practice_tests = student["practice_tests"]
+
+            st.subheader("💪 Strengths")
+
+            strengths = []
+
+            if average >= 85:
+                strengths.append(
+                    "Excellent overall academic performance"
+                )
+
+            elif average >= 70:
+                strengths.append(
+                    "Good academic performance"
+                )
+
+            if attendance >= 75:
+                strengths.append(
+                    "Good attendance"
+                )
+
+            if study_hours >= 5:
+                strengths.append(
+                    "Strong study habit"
+                )
+
+            if practice_tests >= 5:
+                strengths.append(
+                    "Good practice test participation"
+                )
+
+            if len(strengths) == 0:
+                strengths.append(
+                    "Student has opportunities to develop stronger academic habits"
+                )
+
+            for strength in strengths:
+                st.write("✅", strength)
+
+            st.subheader("⚠️ Areas Needing Improvement")
+
+            weaknesses = []
+
+            if average < 60:
+                weaknesses.append(
+                    "Overall academic performance needs improvement"
+                )
+
+            if attendance < 60:
+                weaknesses.append(
+                    "Attendance is below the recommended level"
+                )
+
+            if study_hours < 3:
+                weaknesses.append(
+                    "Study hours are relatively low"
+                )
+
+            if practice_tests < 3:
+                weaknesses.append(
+                    "More practice tests are recommended"
+                )
+
+            if len(weaknesses) == 0:
+                weaknesses.append(
+                    "No major weakness detected from the analyzed metrics"
+                )
+
+            for weakness in weaknesses:
+                st.write("⚠️", weakness)
+
+            st.subheader("💡 Personalized Recommendations")
+
+            recommendations = []
+
+            if attendance < 75:
+                recommendations.append(
+                    "Improve class attendance and maintain at least 75% attendance."
+                )
+
+            if study_hours < 5:
+                recommendations.append(
+                    "Increase daily study time gradually."
+                )
+
+            if practice_tests < 5:
+                recommendations.append(
+                    "Attempt more practice tests to improve exam readiness."
+                )
+
+            if average < 60:
+                recommendations.append(
+                    "Focus on weak subjects and revise fundamentals regularly."
+                )
+
+            if average >= 85 and attendance >= 75:
+                recommendations.append(
+                    "Maintain the current study strategy and continue consistent practice."
+                )
+
+            for recommendation in recommendations:
+                st.write("💡", recommendation)
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 1
-# ============================================================
+# =========================================================
 
 elif page == "📂 Experiment 1 - Read CSV":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 1 — Reading CSV Data'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("📂 Experiment 1 - Read and Display CSV")
 
-    st.markdown(
-        """
-        <div class="exp-card">
-
-        <h2>📂 Objective</h2>
-
-        Read student information from a CSV file using
-        the Pandas library and display the dataset.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.code(
-        """
+    st.code("""
 import pandas as pd
 
-data = pd.read_csv(
-    "dataset/student_details.csv"
-)
+data = pd.read_csv("dataset/student_details.csv")
 
 print(data.head())
 print(data.tail())
-        """,
-        language="python"
-    )
+""", language="python")
 
-    st.markdown("### 📊 Dataset Preview")
+    st.subheader("📋 First 5 Records")
 
     st.dataframe(
-        students.head(10),
+        students.head(),
         use_container_width=True
     )
 
-    st.markdown("### 🔚 Last Records")
+    st.subheader("📋 Last 5 Records")
 
     st.dataframe(
-        students.tail(5),
+        students.tail(),
         use_container_width=True
     )
 
     st.success(
-        "✅ CSV file was successfully loaded and displayed."
+        "CSV data was successfully read and displayed using Pandas."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 2
-# ============================================================
+# =========================================================
 
 elif page == "🔍 Experiment 2 - Data Exploration":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 2 — Dataset Exploration'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🔍 Experiment 2 - Dataset Exploration")
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+print(data.shape)
+print(data.info())
+print(data.describe())
+print(data.dtypes)
+""", language="python")
 
-        <h2>🔍 Objective</h2>
+    st.subheader("📐 Dataset Shape")
 
-        Explore the structure, size, datatypes and
-        statistical characteristics of the dataset.
+    st.write(students.shape)
 
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-        st.metric(
-            "Rows",
-            students.shape[0]
-        )
-
-    with c2:
-        st.metric(
-            "Columns",
-            students.shape[1]
-        )
-
-    with c3:
-        st.metric(
-            "Missing Values",
-            int(students.isnull().sum().sum())
-        )
-
-    st.markdown("### 📋 Dataset Information")
+    st.subheader("📊 Statistical Description")
 
     st.dataframe(
-        pd.DataFrame({
-            "Column": students.columns,
-            "Datatype": students.dtypes.astype(str),
-            "Non-Null Values": students.notnull().sum().values,
-            "Missing Values": students.isnull().sum().values
-        }),
-        use_container_width=True,
-        hide_index=True
+        students.describe(include="all"),
+        use_container_width=True
     )
 
-    st.markdown("### 📊 Descriptive Statistics")
+    st.subheader("🔤 Data Types")
 
     st.dataframe(
-        students.describe(
-            include="all"
-        ).transpose(),
+        pd.DataFrame(
+            students.dtypes,
+            columns=["Data Type"]
+        ),
         use_container_width=True
     )
 
     st.success(
-        "✅ Dataset structure and statistical information explored successfully."
+        "Dataset structure, statistics and datatypes were explored."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 3
-# ============================================================
+# =========================================================
 
 elif page == "🩹 Experiment 3 - Missing Values":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 3 — Missing Value Handling'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🩹 Experiment 3 - Missing Value Handling")
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+print(data.isnull().sum())
 
-        <h2>🩹 Objective</h2>
+data["gender"] = data["gender"].fillna("Unknown")
+data["city"] = data["city"].fillna("Unknown")
+""", language="python")
 
-        Identify missing values and handle them using
-        appropriate data-cleaning techniques.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    missing_before = students.isnull().sum()
-
-    st.markdown("### 🔎 Missing Values Before Handling")
+    st.subheader("Missing Values")
 
     st.dataframe(
-        missing_before.rename(
-            "Missing Values"
-        ),
+        students.isnull().sum().to_frame("Missing Values"),
         use_container_width=True
     )
 
     cleaned = students.copy()
 
-    cleaned["gender"] = cleaned["gender"].fillna(
-        "Unknown"
-    )
+    cleaned["gender"] = cleaned["gender"].fillna("Unknown")
+    cleaned["city"] = cleaned["city"].fillna("Unknown")
 
-    cleaned["city"] = cleaned["city"].fillna(
-        "Unknown"
-    )
-
-    st.markdown("### 🧹 Missing Values After Handling")
+    st.subheader("After Handling Missing Values")
 
     st.dataframe(
-        cleaned.isnull().sum().rename(
-            "Missing Values"
-        ),
+        cleaned.isnull().sum().to_frame("Missing Values"),
         use_container_width=True
     )
 
-    st.success(
-        "✅ Missing categorical values were handled successfully."
-    )
+    st.success("Missing values were successfully handled.")
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 4
-# ============================================================
+# =========================================================
 
 elif page == "🧹 Experiment 4 - Duplicates":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 4 — Duplicate & Inconsistent Records'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🧹 Experiment 4 - Duplicate & Inconsistent Records")
+
+    st.code("""
+print(data.duplicated().sum())
+
+data = data.drop_duplicates()
+
+data["gender"] = data["gender"].str.strip().str.title()
+data["branch"] = data["branch"].str.strip().str.upper()
+data["city"] = data["city"].str.strip().str.title()
+""", language="python")
 
     duplicate_count = students.duplicated().sum()
 
     st.metric(
-        "🔁 Duplicate Records Detected",
+        "🔁 Duplicate Records",
         duplicate_count
     )
 
-    st.markdown("### 🔎 Duplicate Records")
+    st.subheader("Duplicate Records")
 
-    if duplicate_count > 0:
-
-        st.dataframe(
-            students[
-                students.duplicated()
-            ],
-            use_container_width=True
-        )
+    st.dataframe(
+        students[students.duplicated()],
+        use_container_width=True
+    )
 
     cleaned = students.drop_duplicates()
 
-    st.markdown("### 🧹 Cleaning Operations")
-
-    st.code(
-        """
-data = data.drop_duplicates()
-
-data["gender"] = (
-    data["gender"]
-    .str.strip()
-    .str.title()
-)
-
-data["branch"] = (
-    data["branch"]
-    .str.strip()
-    .str.upper()
-)
-
-data["city"] = (
-    data["city"]
-    .str.strip()
-    .str.title()
-)
-        """,
-        language="python"
-    )
-
     st.metric(
-        "Records After Cleaning",
+        "📊 Records After Cleaning",
         len(cleaned)
     )
 
     st.success(
-        "✅ Duplicate and inconsistent records cleaned successfully."
+        "Duplicates and inconsistent text formatting were cleaned."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 5
-# ============================================================
+# =========================================================
 
 elif page == "🔄 Experiment 5 - Datatype Conversion":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 5 — Datatype Conversion & Formatting'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🔄 Experiment 5 - Datatype Conversion & Formatting")
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+data["test_date"] = pd.to_datetime(
+    data["test_date"],
+    errors="coerce"
+)
 
-        <h2>🔄 Objective</h2>
+data["test_score"] = pd.to_numeric(
+    data["test_score"],
+    errors="coerce"
+)
 
-        Convert columns into suitable datatypes and
-        standardize text and date formats.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("### 📥 Original Activity Data")
-
-    st.dataframe(
-        activity.head(10),
-        use_container_width=True
-    )
+data["study_mode"] = (
+    data["study_mode"]
+    .str.strip()
+    .str.title()
+)
+""", language="python")
 
     converted = activity.copy()
 
@@ -975,180 +755,129 @@ elif page == "🔄 Experiment 5 - Datatype Conversion":
 
     converted["study_mode"] = (
         converted["study_mode"]
-        .astype(str)
         .str.strip()
         .str.title()
     )
 
     converted["remarks"] = (
         converted["remarks"]
-        .astype(str)
         .str.strip()
         .str.title()
     )
 
-    st.markdown("### 🔄 Converted Datatypes")
-
-    st.dataframe(
-        pd.DataFrame({
-            "Column": converted.columns,
-            "Datatype": converted.dtypes.astype(str)
-        }),
-        use_container_width=True,
-        hide_index=True
-    )
-
-    st.markdown("### 📊 Converted Data")
+    st.subheader("Converted Dataset")
 
     st.dataframe(
         converted.head(10),
         use_container_width=True
     )
 
-    st.success(
-        "✅ Datatype conversion and formatting completed."
-    )
-
-
-# ============================================================
-# EXPERIMENT 6
-# ============================================================
-
-elif page == "🔗 Experiment 6 - Merge & Concatenate":
-
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 6 — Merge, Join & Concatenate'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        """
-        <div class="exp-card">
-
-        <h2>🔗 Objective</h2>
-
-        Combine multiple datasets using a common key
-        and demonstrate dataset concatenation.
-
-        <br><br>
-
-        <b>Common Key:</b> student_id
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("### 📂 Datasets")
-
-    c1, c2, c3, c4 = st.columns(4)
-
-    with c1:
-        st.metric(
-            "Student Details",
-            f"{students.shape[0]} × {students.shape[1]}"
-        )
-
-    with c2:
-        st.metric(
-            "Academic",
-            f"{academic.shape[0]} × {academic.shape[1]}"
-        )
-
-    with c3:
-        st.metric(
-            "Learning",
-            f"{learning.shape[0]} × {learning.shape[1]}"
-        )
-
-    with c4:
-        st.metric(
-            "Activity",
-            f"{activity.shape[0]} × {activity.shape[1]}"
-        )
-
-    merged = pd.merge(
-        students.drop_duplicates(),
-        academic.drop_duplicates(),
-        on="student_id",
-        how="inner"
-    )
-
-    merged = pd.merge(
-        merged,
-        learning.drop_duplicates(),
-        on="student_id",
-        how="inner"
-    )
-
-    merged = pd.merge(
-        merged,
-        activity.drop_duplicates(),
-        on="student_id",
-        how="left"
-    )
-
-    st.markdown("### 🔗 Final Merged Dataset")
+    st.subheader("New Data Types")
 
     st.dataframe(
-        merged.head(10),
+        converted.dtypes.to_frame("Data Type"),
         use_container_width=True
     )
 
-    st.metric(
-        "Merged Dataset Shape",
-        f"{merged.shape[0]} × {merged.shape[1]}"
+    st.success(
+        "Datatype conversion and text formatting completed."
+    )
+
+
+# =========================================================
+# EXPERIMENT 6
+# =========================================================
+
+elif page == "🔗 Experiment 6 - Merge & Concatenate":
+
+    st.title("🔗 Experiment 6 - Merge, Join & Concatenate")
+
+    st.code("""
+merged_data = pd.merge(
+    students,
+    academic,
+    on="student_id",
+    how="inner"
+)
+
+merged_data = pd.merge(
+    merged_data,
+    learning,
+    on="student_id",
+    how="inner"
+)
+
+concatenated_data = pd.concat(
+    [students, academic],
+    axis=0,
+    ignore_index=True
+)
+""", language="python")
+
+    students_clean = students.drop_duplicates()
+    academic_clean = academic.drop_duplicates()
+    learning_clean = learning.drop_duplicates()
+
+    merged = pd.merge(
+        students_clean,
+        academic_clean,
+        on="student_id",
+        how="inner"
+    )
+
+    merged = pd.merge(
+        merged,
+        learning_clean,
+        on="student_id",
+        how="inner"
     )
 
     concatenated = pd.concat(
-        [
-            students.drop_duplicates(),
-            academic.drop_duplicates()
-        ],
+        [students_clean, academic_clean],
         axis=0,
         ignore_index=True
     )
 
-    st.markdown("### ➕ Concatenated Dataset")
+    st.subheader("🔗 Merged Dataset")
 
-    st.metric(
-        "Concatenated Shape",
-        f"{concatenated.shape[0]} × {concatenated.shape[1]}"
+    st.write("Shape:", merged.shape)
+
+    st.dataframe(
+        merged.head(),
+        use_container_width=True
+    )
+
+    st.subheader("📎 Concatenated Dataset")
+
+    st.write("Shape:", concatenated.shape)
+
+    st.dataframe(
+        concatenated.head(),
+        use_container_width=True
     )
 
     st.success(
-        "✅ Multiple datasets successfully merged and concatenated."
+        "Datasets were successfully merged and concatenated."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 7
-# ============================================================
+# =========================================================
 
 elif page == "📏 Experiment 7 - Scaling":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 7 — Normalization & Standardization'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("📏 Experiment 7 - Normalization & Standardization")
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+from sklearn.preprocessing import (
+    MinMaxScaler,
+    StandardScaler
+)
 
-        <h2>📏 Objective</h2>
-
-        Transform numerical features to comparable scales
-        using Min-Max Normalization and Standardization.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+minmax_scaler = MinMaxScaler()
+standard_scaler = StandardScaler()
+""", language="python")
 
     features = [
         "attendance",
@@ -1158,108 +887,99 @@ elif page == "📏 Experiment 7 - Scaling":
         "study_hours"
     ]
 
-    scale_data = final_data[features].copy()
+    scaling_data = final_data[features].copy()
 
-    scale_data = scale_data.fillna(
-        scale_data.median()
-    )
+    for column in features:
 
-    from sklearn.preprocessing import (
-        MinMaxScaler,
-        StandardScaler
-    )
+        scaling_data[column] = pd.to_numeric(
+            scaling_data[column],
+            errors="coerce"
+        )
+
+        scaling_data[column] = scaling_data[column].fillna(
+            scaling_data[column].median()
+        )
+
+    from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
     minmax = MinMaxScaler()
 
     normalized = pd.DataFrame(
-        minmax.fit_transform(scale_data),
+        minmax.fit_transform(scaling_data),
         columns=features
     )
 
     standard = StandardScaler()
 
     standardized = pd.DataFrame(
-        standard.fit_transform(scale_data),
+        standard.fit_transform(scaling_data),
         columns=features
     )
 
-    st.markdown("### 📊 Original Numerical Data")
+    st.subheader("📊 Min-Max Normalized Data")
 
     st.dataframe(
-        scale_data.head(10),
+        normalized.head(),
         use_container_width=True
     )
 
-    st.markdown("### 📏 Min-Max Normalized Data")
+    st.subheader("📊 Standardized Data")
 
     st.dataframe(
-        normalized.head(10),
-        use_container_width=True
-    )
-
-    st.markdown("### 📐 Standardized Data")
-
-    st.dataframe(
-        standardized.head(10),
+        standardized.head(),
         use_container_width=True
     )
 
     st.success(
-        "✅ Normalization and standardization completed successfully."
+        "Numerical features were normalized and standardized."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 8
-# ============================================================
+# =========================================================
 
 elif page == "🔤 Experiment 8 - Encoding":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 8 — Label & One-Hot Encoding'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🔤 Experiment 8 - Label Encoding & One-Hot Encoding")
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+from sklearn.preprocessing import LabelEncoder
 
-        <h2>🔤 Objective</h2>
+encoder = LabelEncoder()
 
-        Convert categorical variables into numerical
-        representations suitable for analysis and machine learning.
+data["gender_encoded"] = encoder.fit_transform(
+    data["gender"].fillna("Unknown")
+)
 
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+one_hot_data = pd.get_dummies(
+    data,
+    columns=["branch", "preferred_resource"],
+    dtype=int
+)
+""", language="python")
 
     from sklearn.preprocessing import LabelEncoder
 
-    encoded = final_data.copy()
+    encoding_data = final_data.copy()
 
     encoder = LabelEncoder()
 
-    encoded["gender_encoded"] = encoder.fit_transform(
-        encoded["gender"].fillna("Unknown")
+    encoding_data["gender_encoded"] = encoder.fit_transform(
+        encoding_data["gender"].fillna("Unknown")
     )
 
-    st.markdown("### 🔢 Label Encoding")
+    st.subheader("🏷️ Label Encoding")
 
     st.dataframe(
-        encoded[
-            [
-                "gender",
-                "gender_encoded"
-            ]
-        ].head(15),
+        encoding_data[
+            ["gender", "gender_encoded"]
+        ].head(10),
         use_container_width=True
     )
 
     one_hot = pd.get_dummies(
-        encoded,
+        encoding_data,
         columns=[
             "branch",
             "preferred_resource",
@@ -1268,61 +988,66 @@ elif page == "🔤 Experiment 8 - Encoding":
         dtype=int
     )
 
-    st.markdown("### 🔲 One-Hot Encoded Data")
+    st.subheader("🔤 One-Hot Encoded Data")
 
     st.dataframe(
-        one_hot.head(10),
+        one_hot.head(),
         use_container_width=True
     )
 
     st.metric(
-        "Encoded Dataset Shape",
-        f"{one_hot.shape[0]} × {one_hot.shape[1]}"
+        "Encoded Dataset Columns",
+        one_hot.shape[1]
     )
 
     st.success(
-        "✅ Label encoding and one-hot encoding completed."
+        "Categorical variables were successfully encoded."
     )
 
 
-# ============================================================
+# =========================================================
 # EXPERIMENT 9
-# ============================================================
+# =========================================================
 
 elif page == "📦 Experiment 9 - Binning":
 
-    st.markdown(
-        '<div class="main-title">'
-        'Experiment 9 — Binning, Transformation & Discretization'
-        '</div>',
-        unsafe_allow_html=True
+    st.title(
+        "📦 Experiment 9 - Binning, Transformation & Discretization"
     )
 
-    st.markdown(
-        """
-        <div class="exp-card">
+    st.code("""
+data["attendance_category"] = pd.cut(
+    data["attendance"],
+    bins=[0,60,75,90,100],
+    labels=[
+        "Low",
+        "Average",
+        "Good",
+        "Excellent"
+    ]
+)
 
-        <h2>📦 Objective</h2>
+data["study_hours_log"] = np.log1p(
+    data["study_hours"]
+)
 
-        Convert continuous numerical values into meaningful
-        categories and apply mathematical transformation.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+data["study_level"] = pd.cut(
+    data["study_hours"],
+    bins=[-1,2,5,8,20],
+    labels=[
+        "Low",
+        "Medium",
+        "High",
+        "Very High"
+    ]
+)
+""", language="python")
 
     bin_data = final_data.copy()
 
     bin_data["attendance_category"] = pd.cut(
         bin_data["attendance"],
-        bins=[
-            0,
-            60,
-            75,
-            90,
-            100
-        ],
+        bins=[0, 60, 75, 90, 100],
         labels=[
             "Low",
             "Average",
@@ -1337,13 +1062,7 @@ elif page == "📦 Experiment 9 - Binning":
 
     bin_data["study_level"] = pd.cut(
         bin_data["study_hours"],
-        bins=[
-            -1,
-            2,
-            5,
-            8,
-            20
-        ],
+        bins=[-1, 2, 5, 8, 20],
         labels=[
             "Low",
             "Medium",
@@ -1352,7 +1071,7 @@ elif page == "📦 Experiment 9 - Binning":
         ]
     )
 
-    st.markdown("### 📊 Binning Results")
+    st.subheader("📊 Binned Data")
 
     st.dataframe(
         bin_data[
@@ -1364,85 +1083,282 @@ elif page == "📦 Experiment 9 - Binning":
                 "study_hours_log",
                 "study_level"
             ]
-        ].head(15),
+        ].head(10),
         use_container_width=True
     )
 
-    st.markdown("### 📊 Attendance Categories")
+    col1, col2 = st.columns(2)
 
-    attendance_counts = (
-        bin_data["attendance_category"]
-        .value_counts()
-    )
+    with col1:
 
-    st.bar_chart(
-        attendance_counts
-    )
+        st.subheader("Attendance Categories")
 
-    st.markdown("### 📚 Study Level Distribution")
+        st.bar_chart(
+            bin_data["attendance_category"].value_counts()
+        )
 
-    study_counts = (
-        bin_data["study_level"]
-        .value_counts()
-    )
+    with col2:
 
-    st.bar_chart(
-        study_counts
-    )
+        st.subheader("Study Level")
+
+        st.bar_chart(
+            bin_data["study_level"].value_counts()
+        )
 
     st.success(
-        "✅ Binning, transformation and discretization completed."
+        "Binning, transformation and discretization completed."
     )
 
 
-# ============================================================
+# =========================================================
+# EXPERIMENT 10 - WEB SCRAPING
+# =========================================================
+
+elif page == "🌐 Experiment 10 - Web Scraping":
+
+    st.title("🌐 Experiment 10 - Web Scraping")
+
+    st.write("""
+    This experiment demonstrates web scraping using
+    Requests and BeautifulSoup.
+
+    The program extracts a table from the W3Schools HTML Tables
+    webpage and displays the scraped data.
+    """)
+
+    # -----------------------------------------------------
+    # SOURCE CODE
+    # -----------------------------------------------------
+
+    st.subheader("💻 Web Scraping Code")
+
+    st.code("""
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+url = "https://www.w3schools.com/html/html_tables.asp"
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+response = requests.get(
+    url,
+    headers=headers
+)
+
+print("Status code:", response.status_code)
+
+soup = BeautifulSoup(
+    response.text,
+    "html.parser"
+)
+
+table = soup.find("table")
+
+if table is None:
+
+    print("No table found")
+
+else:
+
+    headers_list = []
+
+    for th in table.find_all("th"):
+        headers_list.append(
+            th.text.strip()
+        )
+
+    rows = []
+
+    for tr in table.find_all("tr")[1:]:
+
+        cells = tr.find_all("td")
+
+        row = [
+            cell.text.strip()
+            for cell in cells
+        ]
+
+        if row:
+            rows.append(row)
+
+    df = pd.DataFrame(
+        rows,
+        columns=headers_list
+    )
+
+    print(df)
+""", language="python")
+
+    # -----------------------------------------------------
+    # RUN SCRAPING
+    # -----------------------------------------------------
+
+    st.subheader("🌐 Scraped Website")
+
+    url = "https://www.w3schools.com/html/html_tables.asp"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    try:
+
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=10
+        )
+
+        st.write(
+            "Status Code:",
+            response.status_code
+        )
+
+        if response.status_code == 200:
+
+            soup = BeautifulSoup(
+                response.text,
+                "html.parser"
+            )
+
+            table = soup.find("table")
+
+            if table is None:
+
+                st.error("No table found on the webpage.")
+
+            else:
+
+                headers_list = []
+
+                for th in table.find_all("th"):
+                    headers_list.append(
+                        th.text.strip()
+                    )
+
+                rows = []
+
+                for tr in table.find_all("tr")[1:]:
+
+                    cells = tr.find_all("td")
+
+                    row = [
+                        cell.text.strip()
+                        for cell in cells
+                    ]
+
+                    if row:
+                        rows.append(row)
+
+                scraped_data = pd.DataFrame(
+                    rows,
+                    columns=headers_list
+                )
+
+                # -------------------------------------------------
+                # DISPLAY SCRAPED DATA
+                # -------------------------------------------------
+
+                st.subheader("📋 Extracted Table")
+
+                st.dataframe(
+                    scraped_data,
+                    use_container_width=True
+                )
+
+                # -------------------------------------------------
+                # DATASET INFORMATION
+                # -------------------------------------------------
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.metric(
+                        "Rows Extracted",
+                        scraped_data.shape[0]
+                    )
+
+                with col2:
+                    st.metric(
+                        "Columns Extracted",
+                        scraped_data.shape[1]
+                    )
+
+                # -------------------------------------------------
+                # DOWNLOAD DATA
+                # -------------------------------------------------
+
+                csv_data = scraped_data.to_csv(
+                    index=False
+                )
+
+                st.download_button(
+                    label="⬇️ Download Scraped Data",
+                    data=csv_data,
+                    file_name="web_scraped_data.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+
+                st.success(
+                    "Web scraping completed successfully."
+                )
+
+        else:
+
+            st.error(
+                f"Failed to access webpage. Status code: {response.status_code}"
+            )
+
+    except requests.exceptions.RequestException as e:
+
+        st.error(
+            f"Error while accessing webpage: {e}"
+        )
+
+
+# =========================================================
 # OVERALL ANALYTICS
-# ============================================================
+# =========================================================
 
 elif page == "📊 Overall Analytics":
 
-    st.markdown(
-        '<div class="main-title">'
-        '📊 Overall Student Analytics'
-        '</div>',
-        unsafe_allow_html=True
+    st.title("📊 Overall Student Analytics")
+
+    st.info(
+        "This section analyzes the complete dataset of all students."
     )
 
-    # Metrics
+    col1, col2, col3, col4 = st.columns(4)
 
-    c1, c2, c3, c4 = st.columns(4)
-
-    with c1:
-
+    with col1:
         st.metric(
-            "👨‍🎓 Students",
+            "👨‍🎓 Total Students",
             len(final_data)
         )
 
-    with c2:
-
+    with col2:
         st.metric(
             "📈 Average Score",
             f"{final_data['average_score'].mean():.2f}"
         )
 
-    with c3:
-
+    with col3:
         st.metric(
             "🕒 Average Attendance",
             f"{final_data['attendance'].mean():.2f}%"
         )
 
-    with c4:
-
+    with col4:
         st.metric(
-            "📚 Avg Study Hours",
+            "📖 Average Study Hours",
             f"{final_data['study_hours'].mean():.2f}"
         )
 
-    # Branch
-
-    st.markdown("### 🏫 Branch-wise Performance")
+    st.subheader("🏫 Branch-wise Average Performance")
 
     branch_performance = (
         final_data
@@ -1456,93 +1372,52 @@ elif page == "📊 Overall Analytics":
         )
     )
 
-    st.bar_chart(
-        branch_performance
-    )
+    st.bar_chart(branch_performance)
 
-    # Study vs score
+    st.subheader("📖 Study Hours vs Average Score")
 
-    st.markdown("### 📚 Study Hours vs Average Score")
-
-    fig, ax = plt.subplots(
-        figsize=(9, 5)
-    )
+    fig, ax = plt.subplots(figsize=(8, 5))
 
     ax.scatter(
         final_data["study_hours"],
         final_data["average_score"]
     )
 
-    ax.set_xlabel(
-        "Study Hours"
-    )
-
-    ax.set_ylabel(
-        "Average Score"
-    )
-
+    ax.set_xlabel("Study Hours")
+    ax.set_ylabel("Average Score")
     ax.set_title(
         "Study Hours vs Average Score"
     )
 
-    ax.grid(
-        alpha=0.2
-    )
-
     st.pyplot(fig)
 
-    plt.close(fig)
+    st.subheader("🕒 Attendance vs Average Score")
 
-    # Attendance
-
-    st.markdown("### 🕒 Attendance vs Average Score")
-
-    fig, ax = plt.subplots(
-        figsize=(9, 5)
-    )
+    fig, ax = plt.subplots(figsize=(8, 5))
 
     ax.scatter(
         final_data["attendance"],
         final_data["average_score"]
     )
 
-    ax.set_xlabel(
-        "Attendance (%)"
-    )
-
-    ax.set_ylabel(
-        "Average Score"
-    )
-
+    ax.set_xlabel("Attendance (%)")
+    ax.set_ylabel("Average Score")
     ax.set_title(
         "Attendance vs Average Score"
     )
 
-    ax.grid(
-        alpha=0.2
-    )
-
     st.pyplot(fig)
 
-    plt.close(fig)
 
-
-# ============================================================
+# =========================================================
 # STUDENT INSIGHTS
-# ============================================================
+# =========================================================
 
 elif page == "🏆 Student Insights":
 
-    st.markdown(
-        '<div class="main-title">'
-        '🏆 Student Performance Insights'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.title("🏆 Student Insights")
 
-    # Top students
-
-    st.markdown("### 🥇 Top 10 Students")
+    st.subheader("🥇 Top 10 Students")
 
     top_students = (
         final_data
@@ -1564,33 +1439,23 @@ elif page == "🏆 Student Insights":
                 "performance_category"
             ]
         ],
-        use_container_width=True,
-        hide_index=True
+        use_container_width=True
     )
 
-    # At risk
+    st.subheader("⚠️ Students Needing Improvement")
 
-    st.markdown(
-        "### ⚠️ Students Needing Improvement"
-    )
-
-    at_risk = final_data[
-        (
-            final_data["average_score"] < 60
-        )
-        |
-        (
-            final_data["attendance"] < 60
-        )
+    at_risk_students = final_data[
+        (final_data["average_score"] < 60) |
+        (final_data["attendance"] < 60)
     ]
 
     st.metric(
         "Students Needing Improvement",
-        len(at_risk)
+        len(at_risk_students)
     )
 
     st.dataframe(
-        at_risk[
+        at_risk_students[
             [
                 "student_id",
                 "name",
@@ -1600,32 +1465,18 @@ elif page == "🏆 Student Insights":
                 "performance_category"
             ]
         ],
-        use_container_width=True,
-        hide_index=True
+        use_container_width=True
     )
 
-    # Performance categories
-
-    st.markdown(
-        "### 📊 Performance Category Distribution"
-    )
-
-    category_counts = (
-        final_data[
-            "performance_category"
-        ]
-        .value_counts()
-    )
+    st.subheader("📊 Performance Category Distribution")
 
     st.bar_chart(
-        category_counts
+        final_data[
+            "performance_category"
+        ].value_counts()
     )
 
-    # Branch table
-
-    st.markdown(
-        "### 🏫 Branch Performance"
-    )
+    st.subheader("🏫 Branch Performance")
 
     branch_performance = (
         final_data
@@ -1640,32 +1491,13 @@ elif page == "🏆 Student Insights":
     )
 
     st.dataframe(
-        branch_performance.rename(
+        branch_performance.to_frame(
             "Average Score"
         ),
         use_container_width=True
     )
 
+    st.success(
+        "Overall student insights generated successfully."
+    )
 
-# ============================================================
-# FOOTER
-# ============================================================
-
-st.markdown(
-    """
-    <div class="footer">
-
-    🎓 <b>Smart Student Success Analytics</b>
-
-    <br><br>
-
-    Data Wrangling • Academic Analytics • Learning Behavior • Student Insights
-
-    <br><br>
-
-    Built with Python • Pandas • Scikit-learn • Streamlit
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
